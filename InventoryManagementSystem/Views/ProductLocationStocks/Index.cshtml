@@ -1,0 +1,46 @@
+﻿@model IEnumerable<InventoryManagementSystem.Models.ProductLocationStock>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index of Products in Stock</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Product.ProductNr)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LocationStock.NameLocation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TotalInStock)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Product.ProductNr)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.LocationStock.NameLocation)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TotalInStock)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

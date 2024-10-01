@@ -6,28 +6,41 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using InventoryManagementSystem.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InventoryManagementSystem.Controllers
 {
+    [Authorize]
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<ProductsController> _logger;
 
-        public ProductsController(ApplicationDbContext context)
+        public ProductsController(ApplicationDbContext context, ILogger<ProductsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
+
+        /*public ProductsController(ApplicationDbContext context)
+        {
+            _context = context;
+        }*/
 
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Products.Include(p => p.Supplier);
-            return View(await applicationDbContext.ToListAsync());
+            if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
+            {
+                return View(await _context.Products.ToListAsync());
+            }
+            return Forbid();
         }
 
-        
+
 
         // GET: Products/Create
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public IActionResult Create()
         {
             ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "NameSupplier");
@@ -39,14 +52,26 @@ namespace InventoryManagementSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public async Task<IActionResult> Create([Bind("Id,NameProduct,ProductNr,Price,SupplierId")] Product product)
         {
             if (ModelState.IsValid)
             {
+
                 _context.Add(product);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            else
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors);
+                foreach (var error in errors)
+                {
+                    _logger.LogError($"Validation error: {error.ErrorMessage}");
+                }
+                _logger.LogInformation($"SupplierId: {product.SupplierId}");
+            }
+
             ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "NameSupplier", product.SupplierId);
             return View(product);
         }
@@ -64,8 +89,15 @@ namespace InventoryManagementSystem.Controllers
             {
                 return NotFound();
             }
-            ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "NameSupplier", product.SupplierId);
-            return View(product);
+
+            if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
+            {
+                ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "NameSupplier", product.SupplierId);
+                return View(product);
+            }
+            return Forbid();
+
+            //return View(product);
         }
 
         // POST: Products/Edit/5
@@ -84,8 +116,13 @@ namespace InventoryManagementSystem.Controllers
             {
                 try
                 {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
+                    if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
+                    {
+                        _context.Update(product);
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Index));
+                    }
+                    return Forbid();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -98,13 +135,15 @@ namespace InventoryManagementSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                //return RedirectToAction(nameof(Index));
             }
+
             ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "NameSupplier", product.SupplierId);
             return View(product);
         }
 
         // GET: Products/Delete/5
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -126,6 +165,7 @@ namespace InventoryManagementSystem.Controllers
         // POST: Products/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _context.Products.FindAsync(id);

@@ -157,5 +157,19 @@ namespace InventoryManagementSystem.Controllers
         {
             return _context.LocationStocks.Any(e => e.Id == id);
         }
+
+        public IActionResult LoadAllStockLocations()
+        {
+            try
+            {
+                var stockLocationData = (from s in _context.LocationStocks select s).ToList<LocationStock>();
+                return Json(new { data = stockLocationData });
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }
 }

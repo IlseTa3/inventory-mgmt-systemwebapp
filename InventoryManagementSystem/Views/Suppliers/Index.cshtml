@@ -4,14 +4,23 @@
     ViewData["Title"] = "Index";
 }
 
+<style>
+    #custtable tbody tr {
+        cursor: pointer;
+        color : crimson;
+        font-weight:bold;
+    }
+</style>
+
 <h1>Index Suppliers</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
-<table class="table">
+<table id="custtable" class="display cell-border compact">
     <thead>
         <tr>
+            <th>@Html.DisplayNameFor(model => model.Id)</th>
             <th>
                 @Html.DisplayNameFor(model => model.NameSupplier)
             </th>
@@ -40,6 +49,10 @@
         </tr>
     </thead>
     <tbody>
+        <!--T-body element -->
+    </tbody>
+</table>
+@*
 @foreach (var item in Model) {
         <tr>
             <td>
@@ -72,5 +85,49 @@
             </td>
         </tr>
 }
-    </tbody>
-</table>
+     *@
+
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.11/css/jquery.dataTables.css" />
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.11/js/jquery.dataTables.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#custtable').DataTable({
+                "ajax": {
+                    "url": "/Suppliers/LoadAllSuppliers",
+                    "type": "GET",
+                    "datatype": "json"
+                },
+                "columns": [
+                    { "data": "id" },
+                    { "data": "nameSupplier" },
+                    { "data": "address" },
+                    { "data": "postalCode" },
+                    { "data": "municipality" },
+                    { "data": "country" },
+                    { "data": "vatNr" },
+                    { "data": "phoneNr" },
+                    { "data": "email" },
+                    { "data": null, "defaultContent": "<a href='' class='del'>Delete</a>" }
+                ]
+            });
+
+            $('#custtable tbody').on('click', 'tr', function (e) {
+                e.preventDefault();
+                var id = $("td:first", this).text();
+                if ($(e.target).is("a.del")) {
+                    $.get('@Url.Action("Delete", "Suppliers")', { id: id }, function (data) {
+                        $("body").html(data);
+                    });
+                    return;
+                }
+                $.get('@Url.Action("Edit", "Suppliers")', { id: id }, function (data) {
+                    $("body").html(data);
+                });
+            });
+        });
+    </script>
+}

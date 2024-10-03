@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using InventoryManagementSystem.Models;
 using Microsoft.AspNetCore.Authorization;
+using InventoryManagementSystem.ViewModels.Products;
 
 namespace InventoryManagementSystem.Controllers
 {
@@ -32,7 +33,17 @@ namespace InventoryManagementSystem.Controllers
         {
             if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
             {
-                return View(await _context.Products.ToListAsync());
+                var applicationContext = from prod in _context.Products
+                                         select new IndexViewModel()
+                                         {
+                                             Id = prod.Id,
+                                             NameProduct = prod.NameProduct,
+                                             ProductNr = prod.ProductNr,
+                                             Price = prod.Price,
+                                             NameSupplier = prod.Supplier.NameSupplier
+                                         };
+
+                return View(await applicationContext.ToListAsync());
             }
             return Forbid();
         }
@@ -181,6 +192,30 @@ namespace InventoryManagementSystem.Controllers
         private bool ProductExists(int id)
         {
             return _context.Products.Any(e => e.Id == id);
+        }
+
+        public IActionResult LoadAllProducts()
+        {
+
+            try
+            {
+                var productData = (from prod in _context.Products
+                                   select new IndexViewModel()
+                                   {
+                                       Id = prod.Id,
+                                       NameProduct = prod.NameProduct,
+                                       ProductNr = prod.ProductNr,
+                                       Price = prod.Price,
+                                       NameSupplier = prod.Supplier.NameSupplier
+                                   }).ToList<IndexViewModel>();
+                return Json(new { data = productData });
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
         }
     }
 }

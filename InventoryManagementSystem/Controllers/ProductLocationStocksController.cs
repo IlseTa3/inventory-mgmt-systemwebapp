@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using InventoryManagementSystem.Models;
 using Microsoft.AspNetCore.Authorization;
+using InventoryManagementSystem.ViewModels.ProductLocationStock;
 
 namespace InventoryManagementSystem.Controllers
 {
@@ -26,7 +27,15 @@ namespace InventoryManagementSystem.Controllers
             var applicationDbContext = _context.ProductLocationsStocks.Include(p => p.LocationStock).Include(p => p.Product);
             if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
             {
-                return View(await applicationDbContext.ToListAsync());
+                var applicationContext = from pls in _context.ProductLocationsStocks
+                                         select new IndexViewModel()
+                                         {
+                                             Id = pls.Id,
+                                             ProductNr = pls.Product.ProductNr,
+                                             LocationName = pls.LocationStock.NameLocation,
+                                             TotalInStock = pls.TotalInStock
+                                         };
+                return View(await applicationContext.ToListAsync());
             }
             return Forbid();
             //return View(await applicationDbContext.ToListAsync());
@@ -168,6 +177,27 @@ namespace InventoryManagementSystem.Controllers
         private bool ProductLocationStockExists(int id)
         {
             return _context.ProductLocationsStocks.Any(e => e.Id == id);
+        }
+
+        public IActionResult LoadAllStocks()
+        {
+            try
+            {
+                var stockData = (from pls in _context.ProductLocationsStocks
+                                 select new IndexViewModel()
+                                 {
+                                     Id = pls.Id,
+                                     ProductNr = pls.Product.ProductNr,
+                                     LocationName = pls.LocationStock.NameLocation,
+                                     TotalInStock = pls.TotalInStock
+                                 }).ToList<IndexViewModel>();
+                return Json(new { data = stockData });
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }

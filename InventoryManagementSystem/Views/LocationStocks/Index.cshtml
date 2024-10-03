@@ -4,14 +4,23 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index Location Stocks</h1>
+<style>
+    #custtable tbody tr {
+        cursor: pointer;
+        color: crimson;
+        font-weight: bold;
+    }
+</style>
+
+<h1>Index Location Stock</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
-<table class="table">
+<table id="custtable" class="display cell-border compact">
     <thead>
         <tr>
+            <th>@Html.DisplayNameFor(model => model.Id)</th>
             <th>
                 @Html.DisplayNameFor(model => model.NameLocation)
             </th>
@@ -31,28 +40,69 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+        @*
+        @foreach (var item in Model) {
         <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.NameLocation)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LocationAddress)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PostalCode)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Municipality)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Country)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
+        <td>
+        @Html.DisplayFor(modelItem => item.NameLocation)
+        </td>
+        <td>
+        @Html.DisplayFor(modelItem => item.LocationAddress)
+        </td>
+        <td>
+        @Html.DisplayFor(modelItem => item.PostalCode)
+        </td>
+        <td>
+        @Html.DisplayFor(modelItem => item.Municipality)
+        </td>
+        <td>
+        @Html.DisplayFor(modelItem => item.Country)
+        </td>
+        <td>
+        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+        </td>
         </tr>
-}
+        *@
     </tbody>
 </table>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.11/css/jquery.dataTables.css" />
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.11/js/jquery.dataTables.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#custtable').DataTable({
+                "ajax": {
+                    "url": "/LocationStocks/LoadAllStockLocations",
+                    "type": "GET",
+                    "datatype": "json"
+                },
+                "columns": [
+                    { "data": "id" },
+                    { "data": "nameLocation" },
+                    { "data": "locationAddress" },
+                    { "data": "postalCode" },
+                    { "data": "municipality" },
+                    { "data": "country" },
+                    { "data": null, "defaultContent": "<a href='' class='del'>Delete</a>" }
+                ]
+            });
+
+            $('#custtable tbody').on('click', 'tr', function (e) {
+                e.preventDefault();
+                var id = $("td:first", this).text();
+                if ($(e.target).is("a.del")) {
+                    $.get('@Url.Action("Delete", "LocationStocks")', { id: id }, function (data) {
+                        $("body").html(data);
+                    });
+                    return;
+                }
+                $.get('@Url.Action("Edit", "LocationStocks")', { id: id }, function (data) {
+                    $("body").html(data);
+                });
+            });
+        });
+    </script>
+}

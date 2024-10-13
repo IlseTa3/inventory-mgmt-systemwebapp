@@ -15,9 +15,9 @@ namespace InventoryManagementSystem.Controllers
     public class SuppliersController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public SuppliersController(ApplicationDbContext context, UserManager<IdentityUser> usermanager)
+        public SuppliersController(ApplicationDbContext context, UserManager<ApplicationUser> usermanager)
         {
             _context = context;
             _userManager = usermanager;

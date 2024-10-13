@@ -12,7 +12,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
     new MySqlServerVersion(new Version(8, 0, 36))));
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddAuthorization(options =>
@@ -52,7 +52,7 @@ await roleManager.CreateAsync(new IdentityRole("Stockmanager"));
 await roleManager.CreateAsync(new IdentityRole("Administrator"));
 */
 
-var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
 //Toewijzing rollen aan users (already done, mag in commentaar)
 /*var adminUser = await userManager.FindByEmailAsync("ilset@retroconstruct.be");

@@ -1,0 +1,132 @@
+﻿@model IEnumerable<InventoryManagementSystem.ViewModels.Registrations.IndexViewModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+<style>
+    #custtable tbody tr {
+        cursor: pointer;
+        color: cornflowerblue;
+    }
+
+    #custtable tbody tr td:nth-child(6) {
+        color: darkmagenta;
+        font-weight: bold;
+    }
+
+    
+</style>
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table id="custtable" class="display cell-border compact">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.PersonnelNr)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Firstname)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Lastname)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CellphoneNr)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Role)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @*
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.PersonnelNr)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Firstname)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Lastname)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Email)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CellphoneNr)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Role)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+        *@
+    </tbody>
+</table>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.11/css/jquery.dataTables.css" />
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.11/js/jquery.dataTables.js"></script>
+    <script>
+        $(function () {
+            var table = $('#custtable').DataTable({
+                "ajax": {
+                    "url": "/Admin/LoadAllRegistrations",
+                    "type": "GET",
+                    "datatype": "json"
+                },
+                "columns": [
+
+                    { "data": "personnelNr" },
+                    { "data": "firstname" },
+                    { "data": "lastname" },
+                    { "data": "email" },
+                    { "data": "cellphoneNr" },
+                    { "data": "role" }
+
+                ],
+                "columnDefs": [
+                    { "width": "1", "targets": 0 },
+
+                ],
+                "fixedColumns":true
+            });
+
+            $('#custtable tbody').one('click', 'tr', function (e) {
+                e.preventDefault();
+                // deze var id = $("td:first", this).text(); vervangen door:
+                var id = table.row(this).data().id;
+                if ($(e.target).is("a.del")) {
+                    $.get('@Url.Action("Delete", "Admin")', { id: id }, function (data) {
+                        $("body").html(data);
+                    });
+                    return;
+                }
+                $.get('@Url.Action("Edit", "Admin")' + '/' + id, function (data) {
+                    $("body").html(data);
+                })
+
+            });
+        });
+
+    </script>
+}
+
+

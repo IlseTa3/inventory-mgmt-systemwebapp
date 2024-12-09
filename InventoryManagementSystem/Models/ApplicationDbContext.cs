@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using InventoryManagementSystem.ViewModels.Registrations;
+using InventoryManagementSystem.ViewModels.ProductLocationStock;
 
 namespace InventoryManagementSystem.Models
 {
@@ -17,5 +18,6 @@ namespace InventoryManagementSystem.Models
 
         public DbSet<ProductLocationStock> ProductLocationsStocks { get; set; }
         public DbSet<InventoryManagementSystem.ViewModels.Registrations.IndexViewModel> IndexViewModel { get; set; } = default!;
+        public DbSet<InventoryManagementSystem.ViewModels.ProductLocationStock.IndexViewModel> IndexViewModel_1 { get; set; } = default!;
     }
 }

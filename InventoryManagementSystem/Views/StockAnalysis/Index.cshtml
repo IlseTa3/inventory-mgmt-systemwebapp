@@ -1,0 +1,150 @@
+﻿@model IEnumerable<InventoryManagementSystem.ViewModels.ProductLocationStock.IndexViewModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<style>
+    #custtable tbody tr {
+        cursor: pointer;
+        color: crimson;
+        font-weight: bold;
+    }
+    #zoekopdracht{
+        margin: 1em auto;
+    }
+    
+</style>
+
+<h1>Analysis Stock</h1>
+
+
+<div id="zoekopdracht">
+    <input type="text" id="locationSearch1" placeholder="Zoek op locatie 1">
+    <input type="text" id="locationSearch2" placeholder="Zoek op locatie 2">
+    <button onclick="searchStockComparison()">Zoeken</button>
+</div>
+<table id="custtable" class="display cell-border compact">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProductNr)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LocationName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TotalInStock)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<canvas id="comparisonChart" width="400" height="200"></canvas>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.11/css/jquery.dataTables.css" />
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.11/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function fetchStockComparisonData(locations) {
+            console.log("Fetching data for locations:", locations);
+            $.ajax({
+                url: '/StockAnalysis/GetStockComparisonData',
+                type: 'GET',
+                data: { locations: locations },
+                traditional: true,
+                success: function (response) {
+                    console.log("Received data:", response);
+                    if (response.data && response.data.length > 0) {
+                        $('#custtable').DataTable().clear().rows.add(response.data).draw();
+                        updateComparisonChart(response.data, locations);
+                    } else {
+                        alert("Geen data gevonden voor de geselecteerde locaties.");
+                    }
+                },
+                error: function (error) {
+                    console.error("Er is een fout opgetreden:", error);
+                }
+            });
+        }
+
+        function updateComparisonChart(data, locations) {
+            var ctx = document.getElementById('comparisonChart').getContext('2d');
+            var products = [...new Set(data.map(d => d.productNr))];
+            var colors = ['rgba(144, 238, 144, 0.6)', 'rgba(139, 0, 0, 0.6)'];
+            var datasets = locations.map((location,index) => {
+                return {
+                    label: location,
+                    data: products.map(product => {
+                        var item = data.find(d => d.productNr === product && d.locationName === location);
+                        return item ? item.totalInStock : 0;
+                    }),
+                    backgroundColor: colors[index % colors.length],
+                    borderColor: colors[index % colors.length],
+                    borderWidth: 1
+                };
+            });
+
+            if (window.stockChart) {
+                window.stockChart.destroy();
+            }
+
+            window.stockChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: products,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function searchStockComparison() {
+            var location1 = document.getElementById('locationSearch1').value.trim();
+            var location2 = document.getElementById('locationSearch2').value.trim();
+            var locations = [];
+
+            if (location1) locations.push(location1);
+            if (location2) locations.push(location2);
+
+            console.log("Zoekopdracht voor locaties: ", locations); // Controleer in de browserconsole
+
+            fetchStockComparisonData(locations);
+        }
+
+        $(document).ready(function () {
+            if (!$.fn.DataTable.isDataTable('#custtable')) {
+                $('#custtable').DataTable({
+                    "processing": true,
+                    "serverSide": false,
+                    "ajax": {
+                        "url": "/StockAnalysis/GetStockComparisonData",
+                        "type": "GET",
+                        "dataSrc": "data",
+                        "datatype": "json"
+                    },
+                    "columns": [
+                        { "data": "id" },
+                        { "data": "productNr" },
+                        { "data": "locationName" },
+                        { "data": "totalInStock" }
+                    ]
+                });
+            }
+        });
+    </script>
+}

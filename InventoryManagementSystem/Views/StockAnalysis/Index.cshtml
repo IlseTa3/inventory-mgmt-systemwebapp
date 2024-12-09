@@ -13,17 +13,23 @@
     #zoekopdracht{
         margin: 1em auto;
     }
+    .location-input{
+        margin: 0.4em auto;
+    }
     
 </style>
 
 <h1>Analysis Stock</h1>
 
 
-<div id="locationInputs">
-    <input type="text" name="locations" class="location-input" placeholder="Locatie 1">
-</div>
-<button id="addLocation">Voeg locatie toe</button>
-<button id="search">Zoek</button>
+<section id="zoekopdracht">
+    <div class="location-input" id="locationInputs">
+        <input type="text" name="locations" class="location-input" placeholder="Locatie 1">
+    </div>
+    <button id="addLocation">Voeg locatie toe</button>
+    <button id="search">Zoek</button>
+</section>
+
 
 <table id="custtable" class="display cell-border compact">
     <thead>

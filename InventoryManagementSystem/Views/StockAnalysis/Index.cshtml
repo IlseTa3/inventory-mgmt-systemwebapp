@@ -19,11 +19,12 @@
 <h1>Analysis Stock</h1>
 
 
-<div id="zoekopdracht">
-    <input type="text" id="locationSearch1" placeholder="Zoek op locatie 1">
-    <input type="text" id="locationSearch2" placeholder="Zoek op locatie 2">
-    <button onclick="searchStockComparison()">Zoeken</button>
+<div id="locationInputs">
+    <input type="text" name="locations" class="location-input" placeholder="Locatie 1">
 </div>
+<button id="addLocation">Voeg locatie toe</button>
+<button id="search">Zoek</button>
+
 <table id="custtable" class="display cell-border compact">
     <thead>
         <tr>
@@ -53,27 +54,38 @@
     <script src="https://cdn.datatables.net/1.13.11/js/jquery.dataTables.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        function fetchStockComparisonData(locations) {
-            console.log("Fetching data for locations:", locations);
+            document.getElementById('addLocation').addEventListener('click', function () {
+            var newInput = document.createElement('input');
+            newInput.type = 'text';
+            newInput.name = 'locations';
+            newInput.className = 'location-input';
+            newInput.placeholder = `Locatie ${document.querySelectorAll('.location-input').length + 1}`;
+            document.getElementById('locationInputs').appendChild(newInput);
+        });
+
+        document.getElementById('search').addEventListener('click', function () {
+            var locations = Array.from(document.querySelectorAll('.location-input'))
+                .map(input => input.value)
+                .filter(value => value.trim() !== ""); // Verwijder lege velden
+            if (locations.length === 0) {
+                alert("Geef minstens één locatie in.");
+                return;
+            }
+
+            // Stuur de locaties naar de backend via AJAX
             $.ajax({
                 url: '/StockAnalysis/GetStockComparisonData',
-                type: 'GET',
+                method: 'POST',
                 data: { locations: locations },
-                traditional: true,
-                success: function (response) {
-                    console.log("Received data:", response);
-                    if (response.data && response.data.length > 0) {
-                        $('#custtable').DataTable().clear().rows.add(response.data).draw();
-                        updateComparisonChart(response.data, locations);
-                    } else {
-                        alert("Geen data gevonden voor de geselecteerde locaties.");
-                    }
+                success: function (data) {
+                    updateComparisonChart(data.data, locations);
                 },
-                error: function (error) {
-                    console.error("Er is een fout opgetreden:", error);
+                error: function (err) {
+                    console.error("Fout bij ophalen van data", err);
                 }
             });
-        }
+        });
+
 
         function updateComparisonChart(data, locations) {
             var ctx = document.getElementById('comparisonChart').getContext('2d');
@@ -111,19 +123,6 @@
                     }
                 }
             });
-        }
-
-        function searchStockComparison() {
-            var location1 = document.getElementById('locationSearch1').value.trim();
-            var location2 = document.getElementById('locationSearch2').value.trim();
-            var locations = [];
-
-            if (location1) locations.push(location1);
-            if (location2) locations.push(location2);
-
-            console.log("Zoekopdracht voor locaties: ", locations); // Controleer in de browserconsole
-
-            fetchStockComparisonData(locations);
         }
 
         $(document).ready(function () {

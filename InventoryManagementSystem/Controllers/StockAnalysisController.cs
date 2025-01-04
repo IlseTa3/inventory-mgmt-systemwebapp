@@ -7,7 +7,15 @@ using Microsoft.Extensions.Logging;
 
 namespace InventoryManagementSystem.Controllers
 {
-    [Authorize]
+
+    /*
+     This is only authorized for the Stockmanagers.
+    In here the manager can analyse the stock based on their location.
+    The manager can fill in one or more locations and a small bar graphics will show up
+    per productnr and how much there is left of this product per location.
+    
+     */
+    [Authorize(Policy = "RequireStockmanagerRole")]
     public class StockAnalysisController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -23,7 +31,7 @@ namespace InventoryManagementSystem.Controllers
         public async Task<IActionResult> Index()
         {
             //var applicationDbContext = _context.ProductLocationsStocks.Include(p => p.LocationStock).Include(p => p.Product);
-            if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
+            if (User.IsInRole("Stockmanager"))
             {
                 var applicationContext = from pls in _context.ProductLocationsStocks
                                          select new IndexViewModel()
@@ -39,7 +47,11 @@ namespace InventoryManagementSystem.Controllers
 
         }
 
-    
+        private bool ProductLocationStockExists(int id)
+        {
+            return _context.ProductLocationsStocks.Any(e => e.Id == id);
+        }
+
         public IActionResult GetStockComparisonData(string[] locations)
         {
 

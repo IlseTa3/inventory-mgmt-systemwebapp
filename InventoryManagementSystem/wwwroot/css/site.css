@@ -20,3 +20,14 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+
+section.start{
+    margin-left: 3em;
+}
+
+h1{
+    text-align:center;
+    border-bottom:2px solid darkred;
+}
+

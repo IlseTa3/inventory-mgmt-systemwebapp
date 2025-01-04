@@ -8,6 +8,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InventoryManagementSystem.Controllers
 {
+
+    /*
+     Admincontroller = to maintain all incoming registers for all employees.
+    Depending on the PersonellNr, a new registered member will be provided a Role.
+    This role gives a certain access to the platform.
+    For instance: a "Stockemployee" can READ and UPDATE products, but cannot CREATE or DELETE products.
+     
+    An administrator can also CREATE new members, if asked my HR.
+    The new member gets an email with a temporary password and can login.
+    Best is that the new member changes his password.
+     
+     */
     [Authorize(Policy = "RequireAdministratorRole")]
     public class AdminController : Controller
     {

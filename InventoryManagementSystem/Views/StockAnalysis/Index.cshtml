@@ -71,7 +71,7 @@
 
         document.getElementById('search').addEventListener('click', function () {
             var locations = Array.from(document.querySelectorAll('.location-input'))
-                .map(input => input.value)
+                .map(input => input.value || "")
                 .filter(value => value.trim() !== ""); // Verwijder lege velden
             if (locations.length === 0) {
                 alert("Geef minstens één locatie in.");
@@ -81,7 +81,7 @@
             // Stuur de locaties naar de backend via AJAX
             $.ajax({
                 url: '/StockAnalysis/GetStockComparisonData',
-                method: 'POST',
+                method: 'GET',
                 data: { locations: locations },
                 success: function (data) {
                     updateComparisonChart(data.data, locations);
@@ -130,6 +130,8 @@
                 }
             });
         }
+
+
 
         $(document).ready(function () {
             if (!$.fn.DataTable.isDataTable('#custtable')) {
